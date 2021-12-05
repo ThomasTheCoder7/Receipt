@@ -22,6 +22,8 @@ ___
 ## Printing the receipt
 
 Each receipt will be printed in this way.
+###
+###
 ![image-0](https://github.com/ThomasTheCoder7/Receipt/blob/master/EXAMPLE.png?raw=true%27%3E)
 ___
 
