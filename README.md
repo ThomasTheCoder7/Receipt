@@ -16,7 +16,7 @@ ____
 ###
 **Unique id**
 ###
-**Flexiblity***
+**Flexiblity**
 
 ___
 ## Printing the receipt
