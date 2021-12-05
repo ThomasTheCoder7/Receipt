@@ -9,9 +9,13 @@ ____
 
 ###
 **Printing the receipt**
+###
 **Saving the receipt**
+###
 **Loading the receipt**
+###
 **Unique id**
+
 ___
 ## Printing the receipt
 
