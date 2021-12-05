@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
@@ -40,7 +41,6 @@ public class Receipt implements Serializable {
     }
 
     public static String Load(String id) throws IOException, InterruptedException {
-        //s.acquire();
         String Directory = "Receipts/"+id+".txt";
         File[] files = new File("Receipts").listFiles();
         boolean found = false;
@@ -65,7 +65,6 @@ public class Receipt implements Serializable {
     return "Not Found";
     }
     public void IDMAKER(){
-        SimpleDateFormat sdff = new SimpleDateFormat("MMddyyyyHH");
         this.id += "@";
         this.id += ShopName.substring(0,2);
         String init="";
@@ -76,12 +75,14 @@ public class Receipt implements Serializable {
         id+= dateOfPurchase.getTime();
     }
     public String toString() {
+        String[] byemsg = {"Come again soon!","See you next time!","Thank you for choosing us!"};
      String s = displayDate+"\n"+ShopName+"\n"+id+"\n";
      s+="+====================================+\n";
      s+="| NAME        ID    Quantity   Price |\n";
      s+="+====================================+\n";
 
      s+=items.toString()+"+====================================+";
+     s+="\n"+byemsg[new Random().nextInt(byemsg.length)];
      return s;
     }
 }

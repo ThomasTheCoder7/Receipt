@@ -14,17 +14,8 @@ public class Main {
         items.addItem("Cheese", 5);
         items.addItem("Milk", 5);
         items.addItem("Honey", 5);
-        Receipt r = new Receipt("JawadsMall", items);
-
-
-        Thread T = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    System.out.println(Receipt.Load("@JaH1638470966826"));
-                } catch (Exception e) { System.out.println(e); }}
-        });
-        T.start();
-        T.run();
+        Receipt r = new Receipt("RingedCityMarket", items);
+        System.out.println(r);
+        Receipt.Save(r);
     }
 }
