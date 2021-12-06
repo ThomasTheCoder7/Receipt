@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class Receipt implements Serializable {
+    static final long serialVersionUID = 53L;
    static Semaphore s = new Semaphore(1);
    private String id="";
    private String ShopName;
@@ -29,6 +30,11 @@ public class Receipt implements Serializable {
         displayDate = sdf.format(dateOfPurchase);
         IDMAKER();
     }
+
+    public void addItem(String n,double price){
+        items.addItem(n,price);
+    }
+
 
     public static void Save(Receipt r) throws IOException, InterruptedException {
         s.acquire();

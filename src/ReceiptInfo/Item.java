@@ -6,6 +6,11 @@ public class Item implements Serializable {
     String name,id;
     double price;
     int quantity;
+    static final long serialVersionUID = 53L;
+    public Item(){
+
+    }
+
 
     public Item(String name, String id, double price,int quantity) {
         this.name = name;

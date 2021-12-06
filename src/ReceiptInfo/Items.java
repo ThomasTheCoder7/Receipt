@@ -4,11 +4,11 @@ package ReceiptInfo;
 import java.io.Serializable;
 import java.util.Locale;
 
-public class Items implements Serializable {
+public class Items implements Serializable{
     private Item[] items=new Item[5];
     private int nItems=0;
     private double total;
-
+    static final long serialVersionUID = 53L;
 
     public int getnItems() {
         return nItems;
