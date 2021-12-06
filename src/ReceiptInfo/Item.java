@@ -37,7 +37,7 @@ public class Item implements Serializable {
     public String toString() {
         return
                  "| "+name+space(name.length())+
-                 id+space(String.valueOf(id).length())+
+                 id+space(String.valueOf(quantity).length())+
                          quantity+space(String.valueOf(quantity*price).length())+
                          price*quantity+" |"
         ;

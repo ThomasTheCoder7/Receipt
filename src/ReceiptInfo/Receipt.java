@@ -22,10 +22,10 @@ public class Receipt implements Serializable {
    SimpleDateFormat  sdf = new SimpleDateFormat("MM/dd/yyyy  hh:mm aa");
    String displayDate;
 
-    public Receipt(String shopName, Items items) {
+    public Receipt(String shopName) {
         ShopName = shopName;
         this.dateOfPurchase = new Date();
-        this.items = items;
+        this.items = new Items();
         this.total = items.getTotal();
         displayDate = sdf.format(dateOfPurchase);
         IDMAKER();
@@ -34,7 +34,9 @@ public class Receipt implements Serializable {
     public void addItem(String n,double price){
         items.addItem(n,price);
     }
-
+    public void addItem(String n,double price,int Quantity){items.addItem(n,price,Quantity);}
+    public void RemoveItems(String n,int q){items.RemoveItem(n,q);}
+    public void RemoveAll(String n){items.RemoveAllItemsNamed(n);}
 
     public static void Save(Receipt r) throws IOException, InterruptedException {
         s.acquire();
@@ -83,11 +85,13 @@ public class Receipt implements Serializable {
     public String toString() {
         String[] byemsg = {"Come again soon!","See you next time!","Thank you for choosing us!"};
      String s = displayDate+"\n"+ShopName+"\n"+id+"\n";
-     s+="+====================================+\n";
-     s+="| NAME        ID    Quantity   Price |\n";
-     s+="+====================================+\n";
+     s+="+======================================+\n";
+     s+="| NAME        ID    Quantity   Price   |\n";
+     s+="+======================================+\n";
 
-     s+=items.toString()+"+====================================+";
+     s+=items.toString()+"+======================================+";
+
+     s+="\nTotal = "+items.getTotal();
      s+="\n"+byemsg[new Random().nextInt(byemsg.length)];
      return s;
     }

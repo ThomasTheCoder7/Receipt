@@ -21,7 +21,7 @@ public class Items implements Serializable{
     public void addItem(String name, double price){
         boolean exists = false;
         total+=price;
-        String ID = name.toUpperCase().charAt(0)+""+name.length()+""+name.toUpperCase().charAt(name.length()-1)+""+(int)price;
+        String ID = name.toUpperCase().charAt(0)+""+name.length()+""+name.toUpperCase().charAt(name.length()-1)+"";
         for(int i = 0;i<nItems;i++){
             if(ID.equals(items[i].id)){items[i].quantity++; exists=true;}
         }
@@ -60,8 +60,33 @@ public class Items implements Serializable{
             for (int i = k; i < nItems; i++) { items[i] = items[i + 1];}
             nItems--;
         }
-
     }
+
+    public void addItem(String name, double price,int Quantity){
+        boolean exists = false;
+        total+=price*Quantity;
+        String ID = name.toUpperCase().charAt(0)+""+name.length()+""+name.toUpperCase().charAt(name.length()-1)+"";
+        for(int i = 0;i<nItems;i++){
+            if(ID.equals(items[i].id)){items[i].quantity+=Quantity; exists=true;}
+        }
+
+
+        if(nItems>=items.length){
+            Item[] temp = new Item[nItems*2];
+            for(int i = 0;i<items.length;i++){
+                temp[i]=items[i];
+            }
+            items = temp;
+        }
+        if(!exists) {
+
+            items[nItems++]=new Item(name,ID,price,Quantity);
+        }
+    }
+
+
+
+
     public void RemoveItem(String name,int Quantity) {
         int k = 0;
         boolean found = false;
