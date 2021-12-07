@@ -35,42 +35,27 @@ public class Receipt implements Serializable {
         items.addItem(n,price);
     }
     public void addItem(String n,double price,int Quantity){items.addItem(n,price,Quantity);}
+    public void addItem(Item i){items.addItem(i.name,i.price,i.quantity);}
     public void RemoveItems(String n,int q){items.RemoveItem(n,q);}
     public void RemoveAll(String n){items.RemoveAllItemsNamed(n);}
 
-    public static void Save(Receipt r) throws IOException, InterruptedException {
-        s.acquire();
+    public static void Save(Receipt r) throws Exception {
         String Directory = "Receipts/"+r.id+".txt";
-        FileWriter fileWriter = new FileWriter(Directory);
-        fileWriter.write(r.toString());
-        fileWriter.close();
-        Thread.sleep(1000);
-        s.release();
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(Directory));
+        oos.writeObject(r);
+        oos.close();
     }
 
-    public static String Load(String id) throws IOException, InterruptedException {
+    public static void  Delete(Receipt r){
+        File file = new File("Receipts/"+r.id+".txt");
+        file.delete();
+    }
+
+    public static Receipt Load(String id) throws Exception {
         String Directory = "Receipts/"+id+".txt";
-        File[] files = new File("Receipts").listFiles();
-        boolean found = false;
-        for(int i = 0;i<files.length;i++){
-            if((id+".txt").equals(files[i].getName())){
-                found = true;
-            }
-
-        }
-
-        if(found){
-            s.acquire();
-            String receipt = "";
-            Scanner scan = new Scanner(new File(Directory));
-            while (scan.hasNext()){
-                receipt+=scan.nextLine()+"\n";
-            }
-            Thread.sleep(1000);
-            s.release();
-        return receipt;
-        }else
-    return "Not Found";
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(Directory));
+        Receipt r = (Receipt) ois.readObject();
+        return r;
     }
     public void IDMAKER(){
         this.id += "@";

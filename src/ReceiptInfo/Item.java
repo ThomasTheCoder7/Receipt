@@ -11,8 +11,35 @@ public class Item implements Serializable {
 
     }
 
+    public String getName() {
+        return name;
+    }
 
-    public Item(String name, String id, double price,int quantity) {
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public Item(String name, String id, double price, int quantity) {
         this.name = name;
         this.id = id;
         this.price = price;
