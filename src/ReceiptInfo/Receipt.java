@@ -43,7 +43,11 @@ public class Receipt implements Serializable {
         String Directory = "Receipts/"+r.id+".txt";
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(Directory));
         oos.writeObject(r);
-        oos.close();
+        oos.flush();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public static void  Delete(Receipt r){

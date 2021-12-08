@@ -4,18 +4,18 @@ import ReceiptInfo.Receipt;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.concurrent.locks.ReadWriteLock;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Cashier {
     public static void main(String[] args) throws Exception {
-        Socket s = new Socket("localhost",1434);
+        Socket s = new Socket("localhost",1334);
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
         DataInputStream dis = new DataInputStream(s.getInputStream());
-        Scanner scan = new Scanner(System.in);
         ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
         ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+        Scanner scan = new Scanner(System.in);
         while (true) {
 
             System.out.println("1--> Find a Receipt");
@@ -27,13 +27,12 @@ public class Cashier {
             switch (statement){
                 case 1:
                     dos.writeInt(1);
-                    dos.flush();
-                    FindAReceipt(dis,dos,ois);
+                    FindAReceipt(dis,dos,ois,oos);
                     break;
                 case 2:
                     dos.writeInt(2);
                     dos.flush();
-                    CreateAReceipt(dis,dos);
+                    CreateAReceipt(dis,dos,oos);
                     break;
                 case 3:
                     System.out.println("GOOD BYE !");
@@ -48,7 +47,7 @@ public class Cashier {
 
 
 
-        public static void FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectInputStream ois) throws Exception{
+        public static void FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectInputStream ois,ObjectOutputStream oos) throws Exception{
         Scanner scan = new Scanner(System.in);
             String id;
             while (true) {
@@ -56,22 +55,29 @@ public class Cashier {
                 id = scan.nextLine();
                 dos.writeUTF(id);
                 dos.flush();
+                System.out.println(id);
                 if(dis.readBoolean()){ break; }
                 else System.out.println("invalid Receipt ID");
             }
             Receipt r = (Receipt) ois.readObject();
-            ReceiptOperations(r);
+            ReceiptOperations(r,oos,dos);
         }
 
 
-        public static void CreateAReceipt(DataInputStream dis,DataOutputStream dos)throws Exception{
+        public static void CreateAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos)throws Exception{
         Scanner scan = new Scanner(System.in);
-        System.out.print("Enter the shop name:");
-        String ShopName = scan.nextLine();
+        String ShopName;
+        while(true){
+            System.out.print("Please Enter the shop name:");
+            ShopName = scan.nextLine();
+            Pattern p = Pattern.compile("^[a-z]*$",Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(ShopName);
+            if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
+            else{ System.out.println("invalid name");}
+        }
         Receipt r = new Receipt(ShopName);
-
         r.addItem(GenerateItem());
-        ReceiptOperations(r);
+        ReceiptOperations(r,oos,dos);
         }
 
         static Item GenerateItem(){
@@ -102,19 +108,30 @@ public class Cashier {
                 if(itemprice >  0){ break; }
                 else{System.out.println("invalid price");}
             }
+            System.out.println("");
             i.setQuantity(itemquantity);
         return i;
         }
 
-        static void ReceiptOperations(Receipt r) throws Exception {
+        static void ReceiptOperations(Receipt r,ObjectOutputStream oos,DataOutputStream dos) throws Exception {
             Scanner scan = new Scanner(System.in);
+            Thread autosaver = new Thread(() -> {
+                try {
+                    while(true) {
+                        oos.writeObject(r);
+                        Thread.sleep(5000);//AutoSave Every 20 sec
+                    } } catch (Exception e) { e.printStackTrace(); }
+            });
             while(true){
-                int k = scan.nextInt();
-                scan.nextLine();
+
                 System.out.println("1--> Add item");
                 System.out.println("2--> Delete item");
                 System.out.println("3--> Delete the receipt");
-                System.out.println("4--> Exit");
+                System.out.println("4--> Print the receipt");
+                System.out.println("5--> Exit");
+                System.out.print("Please make your choice:");
+                int k = scan.nextInt();
+                scan.nextLine();
                 switch (k){
                     case 1:
                         r.addItem(GenerateItem());
@@ -134,12 +151,18 @@ public class Cashier {
                         String qty = scan.nextLine();
                         if(qty.equals("*")){r.RemoveAll(name);}
                         else r.RemoveItems(name, Integer.parseInt(qty));
+                        System.out.println(r);
                         break;
                     case 3:
                         Receipt.Delete(r);
                         return;
                     case 4:
-                        Receipt.Save(r);
+                        System.out.println(r);
+                        break;
+                    case 5:
+                        dos.writeInt(5);
+                        dos.flush();
+                        oos.writeObject(r);
                         return;
                     default:
                         System.out.println("invalid input");
@@ -147,6 +170,5 @@ public class Cashier {
                 }
             }
         }
-
     }
 
