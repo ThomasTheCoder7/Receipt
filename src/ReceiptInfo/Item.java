@@ -58,16 +58,46 @@ public class Item implements Serializable {
             }
             return s;
     }
+    //10
+    String spaceName(int len){
+        String s="";
+        int num = Math.abs(len-10);
+        for(int i = 0;i<num;i++){
+            s+=" ";
+        }
 
+        return s+"| ";
+    }
+    //9
+    String spaceQuantity(int len){
+        String s="";
+        int num = Math.abs(len-10);
+        for (int i =0;i<num;i++){s+=" ";}
+        return s+"| ";
+    }
 
+    String spacePrice(int len){
+        String s="";
+        int num = Math.abs(len-9);
+        for(int i = 0;i<num;i++){s+=" ";}
+        return s+" |";
+    }
+    //5
+    String spaceID(int len){
+        String s="";
+        int num = Math.abs(len-5);
+        for(int i =0;i<num;i++){s+=" ";}
+        return s+"| ";
+    }
 
     public String toString() {
+        if(name.length()>8)
+        name = name.substring(0,5)+".."+name.substring(name.length()-2);
+        System.out.println(name.length()+"lrn");
         return
-                 "| "+name+space(name.length())+
-                 id+space(String.valueOf(quantity).length())+
-                         quantity+space(String.valueOf(quantity*price).length())+
-                         price*quantity+" |"
-        ;
+                 "| "+name+spaceName(name.length())+id+spaceID(String.valueOf(id).length())+
+                         quantity+ spaceQuantity(String.valueOf(quantity).length())+
+                         price*quantity+spacePrice(String.valueOf(quantity*price).length());
     }
 }
 

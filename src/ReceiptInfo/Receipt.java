@@ -38,12 +38,13 @@ public class Receipt implements Serializable {
     public void addItem(Item i){items.addItem(i.name,i.price,i.quantity);}
     public void RemoveItems(String n,int q){items.RemoveItem(n,q);}
     public void RemoveAll(String n){items.RemoveAllItemsNamed(n);}
-
+    public int  GetNItems(){return items.getnItems();}
     public static void Save(Receipt r) throws Exception {
         String Directory = "Receipts/"+r.id+".txt";
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(Directory));
         oos.writeObject(r);
         oos.flush();
+        oos.close();
     }
 
     public String getId() {
@@ -51,14 +52,18 @@ public class Receipt implements Serializable {
     }
 
     public static void  Delete(Receipt r){
-        File file = new File("Receipts/"+r.id+".txt");
-        file.delete();
+        String Directory = "Receipts\\"+r.id+".txt";
+
+        File file = new File(Directory);
+
+        System.out.println(file.delete()+""+file.exists());
     }
 
     public static Receipt Load(String id) throws Exception {
         String Directory = "Receipts/"+id+".txt";
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(Directory));
         Receipt r = (Receipt) ois.readObject();
+        ois.close();
         return r;
     }
     public void IDMAKER(){
@@ -74,12 +79,10 @@ public class Receipt implements Serializable {
     public String toString() {
         String[] byemsg = {"Come again soon!","See you next time!","Thank you for choosing us!"};
      String s = displayDate+"\n"+ShopName+"\n"+id+"\n";
-     s+="+======================================+\n";
-     s+="| NAME        ID    Quantity   Price   |\n";
-     s+="+======================================+\n";
-
-     s+=items.toString()+"+======================================+";
-
+     s+="+===========+======+===========+===========+\n";
+     s+="| NAME      | ID   | Quantity  | Price     |\n";
+     s+="+===========+======+===========+===========+\n";
+     s+=items.toString()+"+===========+======+===========+===========+";
      s+="\nTotal = "+items.getTotal();
      s+="\n"+byemsg[new Random().nextInt(byemsg.length)];
      return s;

@@ -1,17 +1,16 @@
 import ReceiptInfo.Receipt;
 
-import javax.print.attribute.standard.PDLOverrideSupported;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Semaphore;
 
 public class Server {
+    static int NThreads =0;
     public static void main(String[] args)throws Exception {
-        ServerSocket ss = new ServerSocket(1334);
-        ss.setReuseAddress(true); //Enable Multithreading
+        ServerSocket ss = new ServerSocket(1234);
 
-        int ClientNum = 0;
+        ss.setReuseAddress(true); //Enable Multithreading
         while (true){ //as long as Server ready it will accept Clients
             Socket s = ss.accept();
             MT mt = new MT(s);
@@ -25,10 +24,17 @@ class MT implements Runnable{
     static File[] files = new File("Receipts").listFiles();
     static String[] usedR=new String[files.length];
     static int COUNTER = 0;
+    static Semaphore[] sem = new Semaphore[files.length];
+    static String id;
     Socket socket;
     int k = 0;
     public MT(Socket s){
+
         this.socket = s;
+        for(int i = 0;i< files.length;i++){
+            usedR[i]=files[i].getName();
+        }
+
     }
     public void run() {
 
@@ -38,72 +44,70 @@ class MT implements Runnable{
         dos = new DataOutputStream(socket.getOutputStream());
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        Thread AutoSaverThread = new Thread(()-> {
-            while(true){
-                try {
-                    while(true){
-                        Receipt r = (Receipt) ois.readObject();
-                        Receipt.Save(r);
-                        Thread.sleep(5000);//Autosave every 20 sec
-                        System.out.println("Saved");
-                    }} catch (Exception e) { e.printStackTrace();}
-
-            }
-        });
-        String t;
         int CASE;
         while(true){
             CASE = dis.readInt();
             System.out.println(CASE);
-
             switch (CASE){
                 case 1:
                     FindAReceipt(dis,dos,oos);
                     System.out.println("left");
-                    break;
-                case 2:
-                    break;
-                case 5:
-
                     Receipt r = (Receipt) ois.readObject();
                     Receipt.Save(r);
-                    int x = findSpot(r.getId());
+                    int x = findSpot(id+".txt");
                     System.out.println(x);
                     sem[x].release(1);
-                    System.out.println("saved");
+                    break;
+                case 2:
+                    CreateAReceipt(dis,dos,ois);
+                    System.out.println("left");
+                    break;
+                case 3:
+                    boolean found = false;
+                    while(!found) {
+                        id = dis.readUTF()+".txt";
+                        for (int i = 0; i < files.length; i++) {
+                            if (id.equals(files[i].getName())) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        dos.writeBoolean(found);
+                    }
+                    int spot = findSpot(id);
+                    if(sem[spot]==null){sem[spot]=new Semaphore(1);}
+                    sem[spot].acquire();
+
+                   Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
+                case 5:
+
                     break;
                 default:
+                    socket.close();
                     break;
             }
 
         }
-
-
-    }catch (Exception e){return;}
+    }catch (Exception e){
+    }
     }
 
-    static Semaphore[] sem = new Semaphore[files.length];
 
     static boolean FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
         boolean found = false;
+        RefreshFiles();
         while(!found){
-            String id = dis.readUTF();
-            String Directory = "Receipts/"+id+".txt";
+            id = dis.readUTF();
+            String ID =id+".txt";
             for(int i = 0;i<files.length;i++){
-                if((id+".txt").equals(files[i].getName())){ found = true; }
+            if((ID).equals(files[i].getName())){ found = true; }
             }
             dos.writeBoolean(found);
             if(found){
-                System.out.println("ttt");
-                if(COUNTER==0||!find(id)){
-                    usedR[COUNTER]=id;
-                    sem[COUNTER]=new Semaphore(1);
-                    sem[COUNTER].acquire();
-                    COUNTER++;
-                    System.out.println("fff");
-                }else
+                int spot = findSpot(ID);
+                if (sem[spot]==null){sem[spot]=new Semaphore(1);}
+                while (!sem[spot].tryAcquire());
 
-                sem[findSpot(id)].acquire();
                 oos.writeObject(Receipt.Load(id));
                 oos.flush();
                 dos.flush();
@@ -114,74 +118,40 @@ class MT implements Runnable{
     }
 
 
-    static void CreateAReceipt(DataInputStream dis , DataOutputStream dos)throws Exception{
 
 
 
+    static void CreateAReceipt(DataInputStream dis , DataOutputStream dos,ObjectInputStream ois)throws Exception{
+        Receipt r = (Receipt) ois.readObject();
+        Receipt.Save(r);
     }
-    static ObjectInputStream  OIS;
-    static void AutoSaver(Socket s) throws IOException {
-        System.out.println("vvv");
-        Socket f = s;
-        OIS = new ObjectInputStream(f.getInputStream());
-        Thread AutoSaverThread = new Thread(()-> {
-            while(true){
-                try {
-                    while(true){
-
-                        Receipt r = (Receipt) OIS.readObject();
-                        Receipt.Save(r);
-                        Thread.sleep(5000);//Autosave every 20 sec
-                        System.out.println("Saved");
-                    }
-
-
-
-                } catch (Exception e) { e.printStackTrace();}
-
-            }
-        });
-        AutoSaverThread.start();
-
-
-    }
-
-
-
-
-    public static void delete(String id){
-        String[] temp = new String[usedR.length-1];
-        for(int i = 0;i<usedR.length;i++){
-            for(int j = i;j< usedR.length;j++){
-                if(usedR[i].equals(usedR[j])&&i!=j){
-                    for (int k = j;k< usedR.length-1;k++)
-                        temp[k]=usedR[k+1];
-                }//end if
-            }//end inner for
-        }//end outer for
-        usedR=temp;
-    }
-
-    public static boolean find(String id){
-        if(COUNTER==0){return false;}
-        for(int i = 0;i<usedR.length;i++){
-            for(int j = 0;j< usedR.length;j++) {
-           if(usedR[i].equals(usedR[j])&&i!=j)return true;
-            }
-        }
-        return false;
-    }
-
     public static int findSpot(String id){
-        if(COUNTER==0){return 0;}
         for(int i = 0;i<usedR.length;i++){
-            for(int j = 0;j< usedR.length;j++) {
-                if(usedR[i].equals(usedR[j])&&i!=j)return j;
-            }
+            if(id.equals(usedR[i]))return i;
         }
         return -1;
     }
 
+
+
+    static void RefreshFiles(){
+        MT.files = new File("Receipts").listFiles();
+        String[] usedR1 = new String[files.length];
+        for(int i = 0;i< files.length;i++){
+            usedR1[i]=files[i].getName();
+        }
+        usedR=usedR1;
+        Semaphore[] temp = new Semaphore[files.length];
+        int k=0;
+
+        for(int i =0;i<sem.length;i++){
+            if(sem[i]==null)
+                temp[i]=new Semaphore(1);
+            else
+                temp[i]=sem[i];
+        }
+        sem=temp;
+    }
 
 
 

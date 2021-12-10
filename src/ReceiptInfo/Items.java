@@ -93,7 +93,12 @@ public class Items implements Serializable{
         for (int i = 0; i < nItems; i++) {
             if (name.toLowerCase().equals(items[i].name.toLowerCase())) {
                 found=true;
-                if(items[i].quantity>1){items[i].quantity--; total-=items[k].price; return;}
+                if(items[i].quantity>1){
+                    items[i].quantity-=Quantity;
+                    total-=items[k].price;
+                    if(items[i].quantity==0){RemoveAllItemsNamed(name);}
+                    return;
+                }
                 break;
             }
             k++;

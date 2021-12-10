@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class Cashier {
     public static void main(String[] args) throws Exception {
-        Socket s = new Socket("localhost",1334);
+        Socket s = new Socket("localhost",1234);
         DataOutputStream dos = new DataOutputStream(s.getOutputStream());
         DataInputStream dis = new DataInputStream(s.getInputStream());
         ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
@@ -20,7 +20,8 @@ public class Cashier {
 
             System.out.println("1--> Find a Receipt");
             System.out.println("2--> Create a New Receipt");
-            System.out.println("3--> Exit");
+            System.out.println("3--> Delete a Receipt");
+            System.out.println("4--> Exit");
             System.out.print("Please pick a number:");
             int statement = scan.nextInt();
             scan.nextLine(); //reset scanner.
@@ -35,6 +36,22 @@ public class Cashier {
                     CreateAReceipt(dis,dos,oos);
                     break;
                 case 3:
+                    dos.writeInt(3);
+                    System.out.print("Please Enter the Receipt ID:");
+                    String id = scan.nextLine();
+                    dos.writeUTF(id);
+                    while(true){
+                        if(dis.readBoolean()){
+                            System.out.println("Deleting....");
+                            System.out.println("Item Deleted!");
+                            break;
+                        }
+                        else System.out.println("invalid Receipt ID");
+                        id = scan.nextLine();
+                        dos.writeUTF(id);
+                    }
+                break;
+                case 4:
                     System.out.println("GOOD BYE !");
                     return;
                 default:
@@ -42,7 +59,9 @@ public class Cashier {
                     break;
 
             }
+
         }
+
     }
 
 
@@ -55,12 +74,14 @@ public class Cashier {
                 id = scan.nextLine();
                 dos.writeUTF(id);
                 dos.flush();
-                System.out.println(id);
-                if(dis.readBoolean()){ break; }
+                if(dis.readBoolean()){System.out.println("Connecting...."); break; }
                 else System.out.println("invalid Receipt ID");
             }
+
             Receipt r = (Receipt) ois.readObject();
+            System.out.println("Connected!");
             ReceiptOperations(r,oos,dos);
+            oos.writeObject(r);
         }
 
 
@@ -70,7 +91,15 @@ public class Cashier {
         while(true){
             System.out.print("Please Enter the shop name:");
             ShopName = scan.nextLine();
-            Pattern p = Pattern.compile("^[a-z]*$",Pattern.CASE_INSENSITIVE);
+            while(ShopName.length()<2){
+            System.out.println("invalid name");
+            System.out.print("Please Enter the shop name:");
+            ShopName = scan.nextLine();
+
+            }
+
+
+            Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(ShopName);
             if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
             else{ System.out.println("invalid name");}
@@ -78,6 +107,7 @@ public class Cashier {
         Receipt r = new Receipt(ShopName);
         r.addItem(GenerateItem());
         ReceiptOperations(r,oos,dos);
+        oos.writeObject(r);
         }
 
         static Item GenerateItem(){
@@ -87,9 +117,14 @@ public class Cashier {
             while (true) {
                 System.out.print("Please Enter item name:");
                 itemname = scan.nextLine();
-                Pattern p = Pattern.compile("^[a-z]*$",Pattern.CASE_INSENSITIVE);
+                while(itemname.length()<2){
+                    System.out.println("invalid name");
+                    System.out.print("Please Enter item name:");
+                    itemname = scan.nextLine();
+                }
+                Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
                 Matcher m = p.matcher(itemname);
-                if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
+                if(m.find()&&itemname.length()>2){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
                 else{ System.out.println("invalid name");}
             }
             i.setName(itemname);
@@ -106,7 +141,7 @@ public class Cashier {
                 System.out.print("How many do you want:");
                 itemquantity = scan.nextInt();
                 if(itemprice >  0){ break; }
-                else{System.out.println("invalid price");}
+                else{System.out.println("invalid quantity");}
             }
             System.out.println("");
             i.setQuantity(itemquantity);
@@ -115,20 +150,12 @@ public class Cashier {
 
         static void ReceiptOperations(Receipt r,ObjectOutputStream oos,DataOutputStream dos) throws Exception {
             Scanner scan = new Scanner(System.in);
-            Thread autosaver = new Thread(() -> {
-                try {
-                    while(true) {
-                        oos.writeObject(r);
-                        Thread.sleep(5000);//AutoSave Every 20 sec
-                    } } catch (Exception e) { e.printStackTrace(); }
-            });
             while(true){
 
                 System.out.println("1--> Add item");
                 System.out.println("2--> Delete item");
-                System.out.println("3--> Delete the receipt");
-                System.out.println("4--> Print the receipt");
-                System.out.println("5--> Exit");
+                System.out.println("3--> Print the receipt");
+                System.out.println("4--> Exit");
                 System.out.print("Please make your choice:");
                 int k = scan.nextInt();
                 scan.nextLine();
@@ -145,6 +172,10 @@ public class Cashier {
                         }
                         break;
                     case 2:
+                        if(r.GetNItems()<=0){
+                            System.out.println("There is no items to delete!");
+                            break;
+                        }
                         System.out.print("Enter item name:");
                         String name = scan.nextLine();
                         System.out.print("Enter the quantity:");
@@ -154,15 +185,9 @@ public class Cashier {
                         System.out.println(r);
                         break;
                     case 3:
-                        Receipt.Delete(r);
+                        System.out.println(r);
                         return;
                     case 4:
-                        System.out.println(r);
-                        break;
-                    case 5:
-                        dos.writeInt(5);
-                        dos.flush();
-                        oos.writeObject(r);
                         return;
                     default:
                         System.out.println("invalid input");
