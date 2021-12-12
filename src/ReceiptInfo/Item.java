@@ -91,13 +91,15 @@ public class Item implements Serializable {
     }
 
     public String toString() {
+        String PRICE;
         if(name.length()>8)
         name = name.substring(0,5)+".."+name.substring(name.length()-2);
-        System.out.println(name.length()+"lrn");
+        PRICE = String.format("%.2f",quantity*price);
+        if(PRICE.length()>9){PRICE =PRICE.substring(0,9);}
         return
                  "| "+name+spaceName(name.length())+id+spaceID(String.valueOf(id).length())+
                          quantity+ spaceQuantity(String.valueOf(quantity).length())+
-                         price*quantity+spacePrice(String.valueOf(quantity*price).length());
+                         PRICE+spacePrice(PRICE.length());
     }
 }
 

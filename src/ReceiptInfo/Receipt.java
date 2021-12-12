@@ -83,7 +83,7 @@ public class Receipt implements Serializable {
      s+="| NAME      | ID   | Quantity  | Price     |\n";
      s+="+===========+======+===========+===========+\n";
      s+=items.toString()+"+===========+======+===========+===========+";
-     s+="\nTotal = "+items.getTotal();
+     s+= String.format("\nTotal = %.2f",items.getTotal() );
      s+="\n"+byemsg[new Random().nextInt(byemsg.length)];
      return s;
     }

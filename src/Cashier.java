@@ -47,6 +47,7 @@ public class Cashier {
                             break;
                         }
                         else System.out.println("invalid Receipt ID");
+                        System.out.print("Please Enter the Receipt ID:");
                         id = scan.nextLine();
                         dos.writeUTF(id);
                     }
@@ -70,8 +71,9 @@ public class Cashier {
         Scanner scan = new Scanner(System.in);
             String id;
             while (true) {
-                System.out.print("Please Enter the Receipt ID:");
+                System.out.print("Please Enter the Receipt ID or type 'exit':");
                 id = scan.nextLine();
+                if(id.equals("exit")){return;}
                 dos.writeUTF(id);
                 dos.flush();
                 if(dis.readBoolean()){System.out.println("Connecting...."); break; }
@@ -99,7 +101,7 @@ public class Cashier {
             }
 
 
-            Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
+            Pattern p = Pattern.compile("^[a-z '0-9]*$",Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(ShopName);
             if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
             else{ System.out.println("invalid name");}
@@ -186,7 +188,7 @@ public class Cashier {
                         break;
                     case 3:
                         System.out.println(r);
-                        return;
+                        break;
                     case 4:
                         return;
                     default:

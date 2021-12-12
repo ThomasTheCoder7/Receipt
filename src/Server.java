@@ -60,7 +60,7 @@ class MT implements Runnable{
                     break;
                 case 2:
                     CreateAReceipt(dis,dos,ois);
-                    System.out.println("left");
+                    RefreshFiles();
                     break;
                 case 3:
                     boolean found = false;
@@ -77,8 +77,8 @@ class MT implements Runnable{
                     int spot = findSpot(id);
                     if(sem[spot]==null){sem[spot]=new Semaphore(1);}
                     sem[spot].acquire();
-
                    Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
+                   sem[spot].release();
                 case 5:
 
                     break;
@@ -95,7 +95,7 @@ class MT implements Runnable{
 
     static boolean FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
         boolean found = false;
-        RefreshFiles();
+        MT.files = new File("Receipts").listFiles();
         while(!found){
             id = dis.readUTF();
             String ID =id+".txt";
@@ -135,13 +135,13 @@ class MT implements Runnable{
 
 
     static void RefreshFiles(){
-        MT.files = new File("Receipts").listFiles();
-        String[] usedR1 = new String[files.length];
-        for(int i = 0;i< files.length;i++){
-            usedR1[i]=files[i].getName();
+        File[] F1 = new File("Receipts").listFiles();
+        String[] usedR1 = new String[F1.length];
+        for(int i = 0;i< F1.length;i++){
+            usedR1[i]=F1[i].getName();
         }
         usedR=usedR1;
-        Semaphore[] temp = new Semaphore[files.length];
+        Semaphore[] temp = new Semaphore[F1.length];
         int k=0;
 
         for(int i =0;i<sem.length;i++){
@@ -150,9 +150,9 @@ class MT implements Runnable{
             else
                 temp[i]=sem[i];
         }
+        MT.files = F1;
         sem=temp;
     }
-
 
 
 
