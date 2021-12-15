@@ -9,7 +9,10 @@ public class Server {
     static int NThreads =0;
     public static void main(String[] args)throws Exception {
         ServerSocket ss = new ServerSocket(1234);
-
+        File folder = new File("Receipts");
+        if(!folder.exists()){
+            folder.mkdir();
+        }
         ss.setReuseAddress(true); //Enable Multithreading
         while (true){ //as long as Server ready it will accept Clients
             Socket s = ss.accept();
