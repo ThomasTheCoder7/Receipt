@@ -101,7 +101,7 @@ public class Cashier {
             }
 
 
-            Pattern p = Pattern.compile("^[a-z '0-9]*$",Pattern.CASE_INSENSITIVE);
+            Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(ShopName);
             if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
             else{ System.out.println("invalid name");}
@@ -124,7 +124,7 @@ public class Cashier {
                     System.out.print("Please Enter item name:");
                     itemname = scan.nextLine();
                 }
-                Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
+                Pattern p = Pattern.compile("^[a-z '0-9]*$",Pattern.CASE_INSENSITIVE);
                 Matcher m = p.matcher(itemname);
                 if(m.find()&&itemname.length()>2){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.
                 else{ System.out.println("invalid name");}
