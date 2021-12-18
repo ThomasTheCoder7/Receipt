@@ -61,8 +61,9 @@ public class Cashier {
                     while(true){
                         if(id.equals("exit"))break;
                         if(dis.readBoolean()){
-                            System.out.println("Receipt Deleted!");
+                            System.out.println("Deleting....");
                             dis.readInt();
+                            System.out.println("Deleted!");
                             break;
                         }
                         else System.out.println("invalid Receipt ID");
