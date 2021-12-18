@@ -6,7 +6,7 @@ In this project I made a Java application that creates,deletes,print and save re
 <br>
 <br>
 
-> # Multi threaded Server  <img src="https://cdn-icons-png.flaticon.com/512/3208/3208621.png" width="40px"/>
+> # Multi threaded Server  <img src="https://cdn-icons-png.flaticon.com/512/3208/3208726.png" width="40px"/>
 I made a class called Server to handle the saving operation so every receipt can be saved and restored from the server by inserting the receipt id. The server class is multi threaded so it can serve as many cashiers as possible, but each receipt can be accessed by only one cashier at a time for security reasons
 I used semaphores to make that happen.
 > 
@@ -50,7 +50,7 @@ An array of semaphores will be initialised with the size of (number of Receipts 
 <img src="https://github.com/ThomasTheCoder7/Receipt/blob/master/Resources/semaphore.png?raw=true" width="800">
 
 
-># Server   <img src="https://cdn-icons-png.flaticon.com/512/3208/3208621.png" width="40px"/>
+># Server   <img src="https://cdn-icons-png.flaticon.com/512/3208/3208726.png" width="40px"/>
 	
 
 
