@@ -56,12 +56,13 @@ public class Cashier {
                     dos.writeInt(3);
                     System.out.print("Please Enter the Receipt ID or type 'exit':");
                     String id = scan.nextLine();
-                    if(id.equals("exit"))break;
                     dos.writeUTF(id);
+                    if(id.equals("exit"))break;
                     while(true){
                         if(id.equals("exit"))break;
                         if(dis.readBoolean()){
                             System.out.println("Receipt Deleted!");
+                            dis.readInt();
                             break;
                         }
                         else System.out.println("invalid Receipt ID");
@@ -76,6 +77,7 @@ public class Cashier {
                     desktop.browse(url);
                     break;
                 case 5:
+                    dos.writeInt(5);
                     System.out.println("GOOD BYE !");
                     return;
                 default:
@@ -114,8 +116,9 @@ public class Cashier {
         Scanner scan = new Scanner(System.in);
         String ShopName;
         while(true){
-            System.out.print("Please Enter the shop name:");
+            System.out.print("Please Enter the shop name or type 'exit':");
             ShopName = scan.nextLine();
+            if(ShopName.equals("exit")){dos.writeUTF(ShopName); return;}
             while(ShopName.length()<2){
             System.out.println("invalid name");
             System.out.print("Please Enter the shop name:");
@@ -123,7 +126,7 @@ public class Cashier {
 
             }
 
-
+            dos.writeUTF("");
             Pattern p = Pattern.compile("^[a-z ']*$",Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(ShopName);
             if(m.find()){break;}//if string contains only letters I leave loop else I will print invalid name and I will ask you again.

@@ -30,12 +30,7 @@ class MT implements Runnable{
     Socket socket;
     int k = 0;
     public MT(Socket s){
-
         this.socket = s;
-        for(int i = 0;i< files.length;i++){
-            usedR[i]=files[i].getName();
-        }
-
     }
     public void run() {
 
@@ -52,12 +47,14 @@ class MT implements Runnable{
                 switch (CASE){
                     case 1:
                         //Find a receipt
-                        FindAReceipt(dis,dos,oos);
-                        Receipt r = (Receipt) ois.readObject();
-                        Receipt.Save(r);
-                        int x = findSpot(id+".txt");
-
-                        sem[x].release(1);
+                        if(FindAReceipt(dis,dos,oos)) {
+                            Receipt r = (Receipt) ois.readObject();
+                            Receipt.Save(r);
+                            System.out.println(id);
+                            int x = findSpot(id + ".txt");
+                            sem[x].release(1);
+                            System.out.println(sem[x]);
+                        }
                         break;
                     case 2:
                         //Creating a receipt
@@ -66,30 +63,13 @@ class MT implements Runnable{
                         break;
                     case 3:
                         //Deleting a receipt
-                        boolean found = false;
-                        while(!found) {
-                            id = dis.readUTF()+".txt";
-                            for (int i = 0; i < files.length; i++) {
-                                if (id.equals(files[i].getName())) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            dos.writeBoolean(found);
-                        }
-                        int spot = findSpot(id);
-                        if(sem[spot]==null){sem[spot]=new Semaphore(1);}
-                        sem[spot].acquire();
-                        Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
-                        sem[spot].release();
-                        RefreshFiles();
-
-
+                        DeleteAReceipt(dis,dos,oos);
+                        sem[findSpot(id+".txt")].release();
+                        break;
                     case 5:
-
+                        socket.close();
                         break;
                     default:
-                        socket.close();
                         break;
                 }
 
@@ -98,7 +78,32 @@ class MT implements Runnable{
         }
     }
 
+    static void DeleteAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
+        boolean found = false;
+        String aid="";
+        while(!found) {
+           aid=dis.readUTF();
 
+            if(aid.equals("exit")){return;}
+            aid +=".txt";
+
+            for (int i = 0; i < files.length; i++) {
+                if (aid.equals(files[i].getName())) {
+                    found = true;
+                    break;
+                }
+            }
+            dos.writeBoolean(found);
+        }
+        dos.flush();
+        int spot = findSpot(aid);
+        if(sem[spot]==null){sem[spot]=new Semaphore(1);}
+        sem[spot].acquire();
+        Receipt.Delete(Receipt.Load(aid.substring(0,aid.length()-4)));
+
+        dos.writeInt(5);
+        RefreshFiles();
+    }
     static boolean FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
         boolean found = false;
 
@@ -107,18 +112,22 @@ class MT implements Runnable{
             spot=0;
             id = dis.readUTF();
             String ID =id+".txt";
+            if(id.equals("exit")){return false;}
             for(int i = 0;i<MT.files.length;i++){
                 if((ID).equals(MT.files[i].getName())){ found = true; break;}
                 spot++;
             }
             dos.writeBoolean(found);
             if(found){
-                System.out.println(spot);
+                spot = findSpot(ID);
+                System.out.println(spot+"s");
                if(sem[spot]==null){sem[spot]=new Semaphore(1);}
                sem[spot].acquire();
                 oos.writeObject(Receipt.Load(id));
                 oos.flush();
                 dos.flush();
+                id=ID.substring(0,ID.length()-4);
+                return true;
             }
             else System.out.println("not found");
         }
@@ -130,8 +139,10 @@ class MT implements Runnable{
 
 
     static void CreateAReceipt(DataInputStream dis , DataOutputStream dos,ObjectInputStream ois)throws Exception{
+        if(dis.readUTF().equals("exit")){return;}
         Receipt r = (Receipt) ois.readObject();
         Receipt.Save(r);
+        System.out.println("FFFF");
         RefreshFiles();
     }
     public static int findSpot(String id){
@@ -156,7 +167,7 @@ class MT implements Runnable{
                     temp[i] = new Semaphore(1);
                 else if(sem[i].availablePermits()==0)
                     temp[i] = new Semaphore(0);
-                else sem[i]=new Semaphore(1);
+                else temp[i]=new Semaphore(1);
             }else
                 temp[i] = new Semaphore(1);
 
