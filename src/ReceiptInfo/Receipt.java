@@ -1,13 +1,9 @@
 package ReceiptInfo;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.concurrent.Semaphore;
 
 public class Receipt implements Serializable {
@@ -69,20 +65,15 @@ public class Receipt implements Serializable {
     public void IDMAKER(){
         this.id += "@";
         this.id += ShopName.substring(0,2);
-        String init="";
-        for(int i = 0;i<items.getnItems();i++){
-            init+=items.getItems(i).name.charAt(0);
-        }
-        id+=init;
         id+= dateOfPurchase.getTime();
     }
     public String toString() {
         String[] byemsg = {"Come again soon!","See you next time!","Thank you for choosing us!"};
      String s = displayDate+"\n"+ShopName+"\n"+id+"\n";
-     s+="+===========+======+===========+===========+\n";
-     s+="| NAME      | ID   | Quantity  | Price     |\n";
-     s+="+===========+======+===========+===========+\n";
-     s+=items.toString()+"+===========+======+===========+===========+";
+     s+="+================+======+==========+============+\n";
+     s+="| NAME           | ID   | Quantity | Price      |\n";
+     s+="+================+======+==========+============+\n";
+     s+=items.toString()+"+================+======+==========+============+";
      s+= String.format("\nTotal = %.2f",items.getTotal() );
      s+="\n"+byemsg[new Random().nextInt(byemsg.length)];
      return s;

@@ -20,7 +20,6 @@ public class Items implements Serializable{
 
     public void addItem(String name, double price){
         boolean exists = false;
-        total+=price;
         String ID = name.toUpperCase().charAt(0)+""+name.length()+""+name.toUpperCase().charAt(name.length()-1)+"";
         for(int i = 0;i<nItems;i++){
             if(ID.equals(items[i].id)){items[i].quantity++; exists=true;}
@@ -41,6 +40,10 @@ public class Items implements Serializable{
     }
 
     public double getTotal() {
+        total=0;
+        for(int i = 0;i<nItems;i++){
+            total+=items[i].price*items[i].quantity;
+        }
         return total;
     }
 

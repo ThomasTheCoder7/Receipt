@@ -46,60 +46,24 @@ public class Item implements Serializable {
         this.quantity = quantity;
     }
 
-    public String space(int len){
-        int num = 5;
-        String s="";
-        int t = len - num;
-        num = num - t;
-            for(int i = 0;i<=num;i++){
 
-                s+=" ";
-
-            }
-            return s;
-    }
-    //10
-    String spaceName(int len){
+    String space(int len,int total){
         String s="";
-        int num = Math.abs(len-10);
-        for(int i = 0;i<num;i++){
-            s+=" ";
-        }
-
-        return s+"| ";
-    }
-    //9
-    String spaceQuantity(int len){
-        String s="";
-        int num = Math.abs(len-10);
-        for (int i =0;i<num;i++){s+=" ";}
-        return s+"| ";
-    }
-
-    String spacePrice(int len){
-        String s="";
-        int num = Math.abs(len-9);
-        for(int i = 0;i<num;i++){s+=" ";}
-        return s+" |";
-    }
-    //5
-    String spaceID(int len){
-        String s="";
-        int num = Math.abs(len-5);
+        int num = Math.abs(len-total);
         for(int i =0;i<num;i++){s+=" ";}
         return s+"| ";
     }
 
     public String toString() {
         String PRICE;
-        if(name.length()>8)
-        name = name.substring(0,5)+".."+name.substring(name.length()-2);
+        if(name.length()>13)
+        name = name.substring(0,10)+".."+name.substring(name.length()-2);
         PRICE = String.format("%.2f",quantity*price);
-        if(PRICE.length()>9){PRICE =PRICE.substring(0,9);}
+        if(PRICE.length()>9){PRICE =PRICE.substring(0,8)+"..";}
         return
-                 "| "+name+spaceName(name.length())+id+spaceID(String.valueOf(id).length())+
-                         quantity+ spaceQuantity(String.valueOf(quantity).length())+
-                         PRICE+spacePrice(PRICE.length());
+                 "| "+name+space(name.length(),15)+id+space(String.valueOf(id).length(),5)+
+                         quantity+ space(String.valueOf(quantity).length(),9)+
+                         PRICE+space(PRICE.length(),11);
     }
 }
 

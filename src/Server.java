@@ -10,9 +10,7 @@ public class Server {
     public static void main(String[] args)throws Exception {
         ServerSocket ss = new ServerSocket(1234);
         File folder = new File("Receipts");
-        if(!folder.exists()){
-            folder.mkdir();
-        }
+        if(!folder.exists()){ folder.mkdir();}
         ss.setReuseAddress(true); //Enable Multithreading
         while (true){ //as long as Server ready it will accept Clients
             Socket s = ss.accept();
@@ -53,19 +51,21 @@ class MT implements Runnable{
             System.out.println(CASE);
             switch (CASE){
                 case 1:
+                    //Find a receipt
                     FindAReceipt(dis,dos,oos);
-                    System.out.println("left");
                     Receipt r = (Receipt) ois.readObject();
                     Receipt.Save(r);
                     int x = findSpot(id+".txt");
-                    System.out.println(x);
+
                     sem[x].release(1);
                     break;
                 case 2:
+                    //Creating a receipt
                     CreateAReceipt(dis,dos,ois);
                     RefreshFiles();
                     break;
                 case 3:
+                    //Deleting a receipt
                     boolean found = false;
                     while(!found) {
                         id = dis.readUTF()+".txt";
@@ -82,6 +82,9 @@ class MT implements Runnable{
                     sem[spot].acquire();
                    Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
                    sem[spot].release();
+                   RefreshFiles();
+
+
                 case 5:
 
                     break;
@@ -98,19 +101,20 @@ class MT implements Runnable{
 
     static boolean FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
         boolean found = false;
-        MT.files = new File("Receipts").listFiles();
+        RefreshFiles();
+        int spot;
         while(!found){
+            spot=0;
             id = dis.readUTF();
             String ID =id+".txt";
-            for(int i = 0;i<files.length;i++){
-            if((ID).equals(files[i].getName())){ found = true; }
+            for(int i = 0;i<MT.files.length;i++){
+            if((ID).equals(MT.files[i].getName())){ found = true; break;}
+            spot++;
             }
             dos.writeBoolean(found);
             if(found){
-                int spot = findSpot(ID);
-                if (sem[spot]==null){sem[spot]=new Semaphore(1);}
-                while (!sem[spot].tryAcquire());
-
+                System.out.println(spot);
+                while(!sem[spot].tryAcquire()){sem[spot].tryAcquire();}
                 oos.writeObject(Receipt.Load(id));
                 oos.flush();
                 dos.flush();
@@ -127,10 +131,13 @@ class MT implements Runnable{
     static void CreateAReceipt(DataInputStream dis , DataOutputStream dos,ObjectInputStream ois)throws Exception{
         Receipt r = (Receipt) ois.readObject();
         Receipt.Save(r);
+        RefreshFiles();
     }
     public static int findSpot(String id){
-        for(int i = 0;i<usedR.length;i++){
-            if(id.equals(usedR[i]))return i;
+        int x = 0;
+        for(int i = 0;i<MT.files.length;i++){
+            if(id.equals(MT.files[i].getName())){return x;}
+            x++;
         }
         return -1;
     }
@@ -140,21 +147,22 @@ class MT implements Runnable{
     static void RefreshFiles(){
         File[] F1 = new File("Receipts").listFiles();
         String[] usedR1 = new String[F1.length];
-        for(int i = 0;i< F1.length;i++){
-            usedR1[i]=F1[i].getName();
-        }
-        usedR=usedR1;
         Semaphore[] temp = new Semaphore[F1.length];
-        int k=0;
+        for(int i =0;i<temp.length;i++){
 
-        for(int i =0;i<sem.length;i++){
-            if(sem[i]==null)
-                temp[i]=new Semaphore(1);
-            else
-                temp[i]=sem[i];
+            if(i<sem.length) {
+                if (sem[i] == null)
+                    temp[i] = new Semaphore(1);
+                else
+                    temp[i] = new Semaphore(0);
+            }else
+            temp[i] = new Semaphore(1);
+
         }
+
         MT.files = F1;
-        sem=temp;
+        MT.sem=temp;
+
     }
 
 

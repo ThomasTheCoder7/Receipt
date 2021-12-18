@@ -1,8 +1,10 @@
 import ReceiptInfo.Item;
 import ReceiptInfo.Receipt;
 
+import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.URI;
 import java.util.Scanner;
 
 import java.util.regex.Matcher;
@@ -10,18 +12,33 @@ import java.util.regex.Pattern;
 
 public class Cashier {
     public static void main(String[] args) throws Exception {
-        Socket s = new Socket("localhost",1234);
-        DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-        DataInputStream dis = new DataInputStream(s.getInputStream());
-        ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-        ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-        Scanner scan = new Scanner(System.in);
+        Socket s = null;
+        DataOutputStream dos=null;
+        DataInputStream dis=null;
+        ObjectOutputStream oos=null;
+        ObjectInputStream ois=null;
+        Scanner scan = null;
+        try{
+            s = new Socket("localhost",1234);
+            dos = new DataOutputStream(s.getOutputStream());
+            dis = new DataInputStream(s.getInputStream());
+            oos = new ObjectOutputStream(s.getOutputStream());
+            ois = new ObjectInputStream(s.getInputStream());
+            scan= new Scanner(System.in);
+
+        }catch (Exception e){
+            System.err.println("Server is offline");
+            return;
+        }
+
+
         while (true) {
 
             System.out.println("1--> Find a Receipt");
             System.out.println("2--> Create a New Receipt");
             System.out.println("3--> Delete a Receipt");
-            System.out.println("4--> Exit");
+            System.out.println("4--> Project info");
+            System.out.println("5--> Exit");
             System.out.print("Please pick a number:");
             int statement = scan.nextInt();
             scan.nextLine(); //reset scanner.
@@ -37,22 +54,28 @@ public class Cashier {
                     break;
                 case 3:
                     dos.writeInt(3);
-                    System.out.print("Please Enter the Receipt ID:");
+                    System.out.print("Please Enter the Receipt ID or type 'exit':");
                     String id = scan.nextLine();
+                    if(id.equals("exit"))break;
                     dos.writeUTF(id);
                     while(true){
+                        if(id.equals("exit"))break;
                         if(dis.readBoolean()){
-                            System.out.println("Deleting....");
-                            System.out.println("Item Deleted!");
+                            System.out.println("Receipt Deleted!");
                             break;
                         }
                         else System.out.println("invalid Receipt ID");
-                        System.out.print("Please Enter the Receipt ID:");
+                        System.out.print("Please Enter the Receipt ID or type 'exit':");
                         id = scan.nextLine();
                         dos.writeUTF(id);
                     }
                 break;
                 case 4:
+                    URI url = new URI("https://github.com/ThomasTheCoder7/Receipt/blob/master/README.md");
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.browse(url);
+                    break;
+                case 5:
                     System.out.println("GOOD BYE !");
                     return;
                 default:
@@ -107,7 +130,6 @@ public class Cashier {
             else{ System.out.println("invalid name");}
         }
         Receipt r = new Receipt(ShopName);
-        r.addItem(GenerateItem());
         ReceiptOperations(r,oos,dos);
         oos.writeObject(r);
         }
@@ -169,12 +191,13 @@ public class Cashier {
                             System.out.print("Add another item (y/n):");
                             y=scan.nextLine();
                             if(y.equals("y")){r.addItem(GenerateItem());}
-                            if(y.equals("n")){break;}
+                            else if(y.equals("n")){break;}else
                             System.out.print("invalid input please enter the letter 'y' for yes and the letter 'n' for no.");
                         }
                         break;
                     case 2:
                         if(r.GetNItems()<=0){
+
                             System.out.println("There is no items to delete!");
                             break;
                         }
@@ -184,7 +207,7 @@ public class Cashier {
                         String qty = scan.nextLine();
                         if(qty.equals("*")){r.RemoveAll(name);}
                         else r.RemoveItems(name, Integer.parseInt(qty));
-                        System.out.println(r);
+                        System.out.println("Item deleted!");
                         break;
                     case 3:
                         System.out.println(r);
