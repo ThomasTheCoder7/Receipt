@@ -96,14 +96,14 @@ public class Cashier {
             while (true) {
                 System.out.print("Please Enter the Receipt ID or type 'exit':");
                 id = scan.nextLine();
-                if(id.equals("exit")){return;}
                 dos.writeUTF(id);
+                if(id.equals("exit")){return;}
                 dos.flush();
                 if(dis.readBoolean()){System.out.println("Connecting...."); break; }
                 else System.out.println("invalid Receipt ID");
             }
 
-            Receipt r = (Receipt) ois.readObject();
+            ReceiptInfo.Receipt r = (ReceiptInfo.Receipt) ois.readObject();
             System.out.println("Connected!");
             ReceiptOperations(r,oos,dos);
             oos.writeObject(r);

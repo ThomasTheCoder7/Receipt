@@ -40,81 +40,82 @@ class MT implements Runnable{
     public void run() {
 
         DataOutputStream dos = null;
-    try{
-        DataInputStream dis = new DataInputStream(socket.getInputStream());
-        dos = new DataOutputStream(socket.getOutputStream());
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-        int CASE;
-        while(true){
-            CASE = dis.readInt();
-            System.out.println(CASE);
-            switch (CASE){
-                case 1:
-                    //Find a receipt
-                    FindAReceipt(dis,dos,oos);
-                    Receipt r = (Receipt) ois.readObject();
-                    Receipt.Save(r);
-                    int x = findSpot(id+".txt");
+        try{
+            DataInputStream dis = new DataInputStream(socket.getInputStream());
+            dos = new DataOutputStream(socket.getOutputStream());
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+            int CASE;
+            while(true){
+                CASE = dis.readInt();
+                System.out.println(CASE);
+                switch (CASE){
+                    case 1:
+                        //Find a receipt
+                        FindAReceipt(dis,dos,oos);
+                        Receipt r = (Receipt) ois.readObject();
+                        Receipt.Save(r);
+                        int x = findSpot(id+".txt");
 
-                    sem[x].release(1);
-                    break;
-                case 2:
-                    //Creating a receipt
-                    CreateAReceipt(dis,dos,ois);
-                    RefreshFiles();
-                    break;
-                case 3:
-                    //Deleting a receipt
-                    boolean found = false;
-                    while(!found) {
-                        id = dis.readUTF()+".txt";
-                        for (int i = 0; i < files.length; i++) {
-                            if (id.equals(files[i].getName())) {
-                                found = true;
-                                break;
+                        sem[x].release(1);
+                        break;
+                    case 2:
+                        //Creating a receipt
+                        CreateAReceipt(dis,dos,ois);
+                        RefreshFiles();
+                        break;
+                    case 3:
+                        //Deleting a receipt
+                        boolean found = false;
+                        while(!found) {
+                            id = dis.readUTF()+".txt";
+                            for (int i = 0; i < files.length; i++) {
+                                if (id.equals(files[i].getName())) {
+                                    found = true;
+                                    break;
+                                }
                             }
+                            dos.writeBoolean(found);
                         }
-                        dos.writeBoolean(found);
-                    }
-                    int spot = findSpot(id);
-                    if(sem[spot]==null){sem[spot]=new Semaphore(1);}
-                    sem[spot].acquire();
-                   Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
-                   sem[spot].release();
-                   RefreshFiles();
+                        int spot = findSpot(id);
+                        if(sem[spot]==null){sem[spot]=new Semaphore(1);}
+                        sem[spot].acquire();
+                        Receipt.Delete(Receipt.Load(id.substring(0,id.length()-4)));
+                        sem[spot].release();
+                        RefreshFiles();
 
 
-                case 5:
+                    case 5:
 
-                    break;
-                default:
-                    socket.close();
-                    break;
+                        break;
+                    default:
+                        socket.close();
+                        break;
+                }
+
             }
-
+        }catch (Exception e){
         }
-    }catch (Exception e){
-    }
     }
 
 
     static boolean FindAReceipt(DataInputStream dis,DataOutputStream dos,ObjectOutputStream oos) throws Exception {
         boolean found = false;
-        RefreshFiles();
+
         int spot;
         while(!found){
             spot=0;
             id = dis.readUTF();
             String ID =id+".txt";
             for(int i = 0;i<MT.files.length;i++){
-            if((ID).equals(MT.files[i].getName())){ found = true; break;}
-            spot++;
+                if((ID).equals(MT.files[i].getName())){ found = true; break;}
+                spot++;
             }
             dos.writeBoolean(found);
             if(found){
                 System.out.println(spot);
-                while(!sem[spot].tryAcquire()){sem[spot].tryAcquire();}
+               if(sem[spot]==null){sem[spot]=new Semaphore(1);}
+               sem[spot].acquire();
                 oos.writeObject(Receipt.Load(id));
                 oos.flush();
                 dos.flush();
@@ -153,10 +154,11 @@ class MT implements Runnable{
             if(i<sem.length) {
                 if (sem[i] == null)
                     temp[i] = new Semaphore(1);
-                else
+                else if(sem[i].availablePermits()==0)
                     temp[i] = new Semaphore(0);
+                else sem[i]=new Semaphore(1);
             }else
-            temp[i] = new Semaphore(1);
+                temp[i] = new Semaphore(1);
 
         }
 
