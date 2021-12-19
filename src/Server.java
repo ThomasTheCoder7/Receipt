@@ -50,10 +50,8 @@ class MT implements Runnable{
                         if(FindAReceipt(dis,dos,oos)) {
                             Receipt r = (Receipt) ois.readObject();
                             Receipt.Save(r);
-                            System.out.println(id);
                             int x = findSpot(id + ".txt");
                             sem[x].release(1);
-                            System.out.println(sem[x]);
                         }
                         break;
                     case 2:
@@ -64,7 +62,6 @@ class MT implements Runnable{
                     case 3:
                         //Deleting a receipt
                         DeleteAReceipt(dis,dos,oos);
-                        sem[findSpot(id+".txt")].release();
                         break;
                     case 5:
                         socket.close();
@@ -100,7 +97,6 @@ class MT implements Runnable{
         if(sem[spot]==null){sem[spot]=new Semaphore(1);}
         sem[spot].acquire();
         Receipt.Delete(Receipt.Load(aid.substring(0,aid.length()-4)));
-
         dos.writeInt(5);
         RefreshFiles();
     }
@@ -120,7 +116,6 @@ class MT implements Runnable{
             dos.writeBoolean(found);
             if(found){
                 spot = findSpot(ID);
-                System.out.println(spot+"s");
                if(sem[spot]==null){sem[spot]=new Semaphore(1);}
                sem[spot].acquire();
                 oos.writeObject(Receipt.Load(id));

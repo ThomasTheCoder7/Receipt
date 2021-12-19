@@ -48,7 +48,7 @@ public class Receipt implements Serializable {
     }
 
     public static void  Delete(Receipt r){
-        String Directory = "Receipts\\"+r.id+".txt";
+        String Directory = "Receipts/"+r.id+".txt";
 
         File file = new File(Directory);
 
