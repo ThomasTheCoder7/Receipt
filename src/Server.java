@@ -64,7 +64,6 @@ class MT implements Runnable{
                     case 3:
                         //Deleting a receipt
                         DeleteAReceipt(dis,dos,oos);
-                        sem[findSpot(id+".txt")].release();
                         break;
                     case 5:
                         socket.close();
@@ -120,7 +119,6 @@ class MT implements Runnable{
             dos.writeBoolean(found);
             if(found){
                 spot = findSpot(ID);
-                System.out.println(spot+"s");
                if(sem[spot]==null){sem[spot]=new Semaphore(1);}
                sem[spot].acquire();
                 oos.writeObject(Receipt.Load(id));
